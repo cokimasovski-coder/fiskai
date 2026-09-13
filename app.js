@@ -1,41 +1,156 @@
-const CATS=[{id:"hrana",name:"Храна",color:"#22c55e"},{id:"smetki",name:"Сметки",color:"#38bdf8"},{id:"transport",name:"Транспорт",color:"#f59e0b"},{id:"kafe",name:"Кафе / излез",color:"#a78bfa"},{id:"zdravje",name:"Здравје",color:"#f43f5e"},{id:"kirija",name:"Кирија",color:"#fb7185"},{id:"oblekа",name:"Облека",color:"#2dd4bf"},{id:"ostanato",name:"Останато",color:"#94a3b8"}];
-const SHOP_MAP=[[/tinex|тинекс/i,"hrana","Тинекс"],[/ramstor|рамстор/i,"hrana","Рамстор"],[/kam market|кам/i,"hrana","Кам"],[/vero|веро/i,"hrana","Веро"],[/stokomak|стокомак/i,"hrana","Стокомак"],[/okta|октa|makpetrol|макпетрол|lukoil|лукоил/i,"transport","Гориво"],[/a1|telekom|телеком|neotel/i,"smetki","Телеком"],[/evn|евн|toplotna|топлификација/i,"smetki","Сметка"],[/aptek|аптек|zegin|зегин/i,"zdravje","Аптека"],[/coffee|cafe|кафе|starbucks|kfc|mcdonald/i,"kafe","Кафе"]];
-const $=id=>document.getElementById(id);
-let state=JSON.parse(localStorage.getItem("trosoci.v1")||"[]");
-let view=new Date();let editId=null;let selectedCat="hrana";let receiptDataUrl="";
-function save(){localStorage.setItem("trosoci.v1",JSON.stringify(state))}
-function pad(n){return String(n).padStart(2,"0")}
-function fmtDen(n){return Number(n||0).toLocaleString("mk-MK",{minimumFractionDigits:0,maximumFractionDigits:2})}
-function monthKey(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)}
-function mkMonths(){return new Intl.DateTimeFormat("mk-MK",{month:"long",year:"numeric"}).format(view)}
-function nowParts(d=new Date()){return{date:d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()),time:pad(d.getHours())+":"+pad(d.getMinutes())}}
-function renderChips(target,current){target.innerHTML="";CATS.forEach(c=>{const b=document.createElement("button");b.type="button";b.className="chip"+(c.id===current?" on":"");b.textContent=c.name;b.onclick=()=>{selectedCat=c.id;renderChips(target,selectedCat)};target.appendChild(b)})}
-function filtered(){const key=monthKey(view);return state.filter(x=>x.date&&x.date.startsWith(key)).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time))}
-function render(){$("monthLabel").textContent=mkMonths();const items=filtered();const total=items.reduce((s,x)=>s+Number(x.amount||0),0);$("monthSum").innerHTML=fmtDen(total)+" <span>ден</span>";const by={};items.forEach(x=>{by[x.cat]=(by[x.cat]||0)+Number(x.amount||0)});const top=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,4);$("catSummary").innerHTML=top.length?top.map(([id,val])=>{const c=CATS.find(z=>z.id===id)||CATS.at(-1);return `<div class=\"cat-mini\"><span>${c.name}</span><b>${fmtDen(val)} ден</b></div>`}).join(""):`<div class=\"cat-mini\"><span>Нема трошоци</span><b>0 ден</b></div>`;const list=$("list");if(!items.length){list.innerHTML=`<div class=\"empty\">Нема записи за овој месец. Додај трошок или скенирај фискална.</div>`;return}list.innerHTML=items.map(x=>{const c=CATS.find(z=>z.id===x.cat)||CATS.at(-1);return `<div class=\"item\" data-id=\"${x.id}\"><div class=\"dot\" style=\"background:${c.color}\"></div><div class=\"meta\"><b>${x.shop||c.name}</b><small>${x.date} ${x.time||\"\"} · ${c.name}</small></div><div class=\"amt\">${fmtDen(x.amount)} ден</div></div>`}).join("");list.querySelectorAll(".item").forEach(el=>el.onclick=()=>openEdit(el.dataset.id))}
-function openManual(item){editId=item?item.id:null;$("manualTitle").textContent=item?"Измени трошок":"Нов трошок";const p=item?{date:item.date,time:item.time}:nowParts();$("amount").value=item?item.amount:"";$("note").value=item?(item.shop||""):"";$("pay").value=item?(item.pay||"karticka"):"karticka";$("date").value=p.date;$("time").value=p.time||"12:00";selectedCat=item?item.cat:"hrana";renderChips($("catChips"),selectedCat);$("deleteManual").style.display=item?"block":"none";$("manualSheet").classList.add("open")}
-function openEdit(id){const item=state.find(x=>x.id===id);if(item)openManual(item)}
-function closeSheets(){$("manualSheet").classList.remove("open");$("scanSheet").classList.remove("open")}
-$("openManual").onclick=()=>openManual(null);
-$("cancelManual").onclick=closeSheets;
-$("saveManual").onclick=()=>{const amount=Number(String($("amount").value).replace(",","."));if(!amount||amount<=0){alert("Внеси сума.");return}const rec={id:editId||crypto.randomUUID(),amount,cat:selectedCat,date:$("date").value,time:$("time").value,shop:$("note").value.trim(),pay:$("pay").value,source:"manual"};if(editId)state=state.map(x=>x.id===editId?{...x,...rec}:x);else state.unshift(rec);save();closeSheets();render()};
-$("deleteManual").onclick=()=>{if(!editId)return;if(confirm("Да се избрише овој трошок?")){state=state.filter(x=>x.id!==editId);save();closeSheets();render()}};
-$("openScan").onclick=()=>{const p=nowParts();$("scanDate").value=p.date;$("scanTime").value=p.time;$("scanAmount").value="";$("scanShop").value="";$("scanItems").value="";$("ocrStatus").textContent="Отвори камера или галерија.";$("preview").style.display="none";receiptDataUrl="";$("scanCat").innerHTML=CATS.map(c=>`<option value=\"${c.id}\">${c.name}</option>`).join("");$("prodList").innerHTML="";$("scanSheet").classList.add("open");setTimeout(()=>$("photoCam").click(),250)};
-$("cancelScan").onclick=closeSheets;
-$("btnCam").onclick=()=>$("photoCam").click();
-$("btnGal").onclick=()=>$("photoGal").click();
-function getSettings(){return JSON.parse(localStorage.getItem("fiskai.settings")||"{}")}
-$("openSettings").onclick=()=>{const s=getSettings();$("apiKey").value=s.apiKey||"";$("aiModel").value=s.model||"grok-4";$("settingsSheet").classList.add("open")};
-$("cancelSettings").onclick=()=>$("settingsSheet").classList.remove("open");
-$("saveSettings").onclick=()=>{localStorage.setItem("fiskai.settings",JSON.stringify({apiKey:$("apiKey").value.trim(),model:$("aiModel").value}));$("settingsSheet").classList.remove("open")};
-function compressImage(file){return new Promise(resolve=>{const img=new Image();const url=URL.createObjectURL(file);img.onload=()=>{const canvas=document.createElement("canvas");const max=1200;let {width,height}=img;if(width>max){height=height*max/width;width=max}canvas.width=width;canvas.height=height;canvas.getContext("2d").drawImage(img,0,0,width,height);resolve(canvas.toDataURL("image/jpeg",0.72));URL.revokeObjectURL(url)};img.src=url})}
-async function enhanceImage(dataUrl){const img=await new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.src=dataUrl});const canvas=document.createElement("canvas");const scale=img.width<900?2:1;canvas.width=img.width*scale;canvas.height=img.height*scale;const ctx=canvas.getContext("2d");ctx.drawImage(img,0,0,canvas.width,canvas.height);const image=ctx.getImageData(0,0,canvas.width,canvas.height);const d=image.data;for(let i=0;i<d.length;i+=4){const g=d[i]*0.3+d[i+1]*0.59+d[i+2]*0.11;const c=Math.max(0,Math.min(255,(g-128)*1.45+128));const bw=c>150?255:(c<90?0:c);d[i]=d[i+1]=d[i+2]=bw}ctx.putImageData(image,0,0);return canvas.toDataURL("image/jpeg",0.85)}
-function parseReceipt(text){$("scanItems").value=text.trim();const lines=text.split(/\n+/).map(s=>s.trim()).filter(Boolean);let shop=lines[0]||"";let cat="ostanato";for(const [re,c,name] of SHOP_MAP){if(re.test(text)){cat=c;shop=name;break}}$("scanShop").value=shop.slice(0,60);$("scanCat").value=cat;const amounts=[...text.matchAll(/(\d{1,6}[.,]\d{2})/g)].map(m=>Number(m[1].replace(",",".")));const totalHints=text.match(/(vkupno|total|suma|за наплата|za naplata)[^\d]*(\d{1,6}[.,]\d{2})/i);let amount=totalHints?Number(totalHints[2].replace(",",".")):(amounts.length?Math.max(...amounts):0);if(amount)$("scanAmount").value=amount;const dateM=text.match(/(\d{2})[.\/-](\d{2})[.\/-](\d{2,4})/);if(dateM){let y=dateM[3];if(y.length===2)y="20"+y;$("scanDate").value=`${y}-${dateM[2]}-${dateM[1]}`}const timeM=text.match(/(\d{2}):(\d{2})/);if(timeM)$("scanTime").value=`${timeM[1]}:${timeM[2]}`;$("ocrStatus").textContent=amount?"Провери и зачувај.":"Провери ја сумата рачно."}
-const onPhoto=async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;const img=$("preview");receiptDataUrl=await compressImage(file);img.src=receiptDataUrl;img.style.display="block";const enhanced=await enhanceImage(receiptDataUrl);$("ocrStatus").textContent="Читам ја сметката...";try{if(window.Tesseract){const {data}=await Tesseract.recognize(enhanced,"eng");parseReceipt(data.text||"")}else $("ocrStatus").textContent="Внеси сума рачно."}catch(err){$("ocrStatus").textContent="Внеси рачно што фали."}};
-$("photoCam").onchange=onPhoto;$("photoGal").onchange=onPhoto;
-$("saveScan").onclick=()=>{const amount=Number(String($("scanAmount").value).replace(",","."));if(!amount||amount<=0){alert("Внеси ја сумата.");return}state.unshift({id:crypto.randomUUID(),amount,cat:$("scanCat").value,date:$("scanDate").value,time:$("scanTime").value,shop:$("scanShop").value.trim(),products:$("scanItems").value.trim(),photo:receiptDataUrl,source:"scan",pay:"karticka"});save();closeSheets();render()};
-$("prevMonth").onclick=()=>{view.setMonth(view.getMonth()-1);render()};
-$("nextMonth").onclick=()=>{view.setMonth(view.getMonth()+1);render()};
-$("exportBtn").onclick=()=>{const rows=[["datum","vreme","suma","grupa","prodavnica","plakanje","izvor"]];filtered().forEach(x=>rows.push([x.date,x.time,x.amount,x.cat,x.shop||"",x.pay||"",x.source||""]));const csv=rows.map(r=>r.join(",")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="trosoci-"+monthKey(view)+".csv";a.click()};
-$("clearMonthBtn").onclick=()=>{if(!confirm("Да се избришат сите записи за овој месец?"))return;const key=monthKey(view);state=state.filter(x=>!(x.date&&x.date.startsWith(key)));save();render()};
-document.querySelectorAll(".sheet").forEach(s=>s.addEventListener("click",e=>{if(e.target===s)closeSheets()}));
+const CATS = [
+  { id: "hrana", name: "Hrana", color: "#22c55e" },
+  { id: "smetki", name: "Smetki", color: "#38bdf8" },
+  { id: "transport", name: "Transport", color: "#f59e0b" },
+  { id: "kafe", name: "Kafe / izlez", color: "#a78bfa" },
+  { id: "zdravje", name: "Zdravje", color: "#f43f5e" },
+  { id: "kirija", name: "Kirija", color: "#fb7185" },
+  { id: "obleka", name: "Obleka", color: "#2dd4bf" },
+  { id: "ostanato", name: "Ostanato", color: "#94a3b8" }
+];
+const $ = function (id) { return document.getElementById(id); };
+let state = [];
+try { state = JSON.parse(localStorage.getItem("trosoci.v1") || "[]"); } catch (e) { state = []; }
+let view = new Date();
+let editId = null;
+let selectedCat = "hrana";
+let receiptDataUrl = "";
+function save() { localStorage.setItem("trosoci.v1", JSON.stringify(state)); }
+function pad(n) { return String(n).padStart(2, "0"); }
+function fmtDen(n) { return Number(n || 0).toLocaleString("mk-MK"); }
+function monthKey(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1); }
+function mkMonths() { return new Intl.DateTimeFormat("mk-MK", { month: "long", year: "numeric" }).format(view); }
+function nowParts() {
+  var d = new Date();
+  return { date: d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()), time: pad(d.getHours()) + ":" + pad(d.getMinutes()) };
+}
+function catById(id) {
+  for (var i = 0; i < CATS.length; i++) if (CATS[i].id === id) return CATS[i];
+  return CATS[CATS.length - 1];
+}
+function filtered() {
+  var key = monthKey(view);
+  return state.filter(function (x) { return x.date && x.date.indexOf(key) === 0; })
+    .sort(function (a, b) { return (b.date + (b.time || "")).localeCompare(a.date + (a.time || "")); });
+}
+function renderChips(target, current) {
+  target.innerHTML = "";
+  CATS.forEach(function (c) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip" + (c.id === current ? " on" : "");
+    b.textContent = c.name;
+    b.onclick = function () { selectedCat = c.id; renderChips(target, selectedCat); };
+    target.appendChild(b);
+  });
+}
+function render() {
+  $("monthLabel").textContent = mkMonths();
+  var items = filtered();
+  var total = 0;
+  var by = {};
+  items.forEach(function (x) { total += Number(x.amount || 0); by[x.cat] = (by[x.cat] || 0) + Number(x.amount || 0); });
+  $("monthSum").innerHTML = fmtDen(total) + " <span>den</span>";
+  var top = Object.keys(by).map(function (k) { return [k, by[k]]; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 4);
+  if (!top.length) $("catSummary").innerHTML = '<div class="cat-mini"><span>Nema trosoci</span><b>0 den</b></div>';
+  else $("catSummary").innerHTML = top.map(function (row) { var c = catById(row[0]); return '<div class="cat-mini"><span>' + c.name + "</span><b>" + fmtDen(row[1]) + " den</b></div>"; }).join("");
+  var list = $("list");
+  if (!items.length) { list.innerHTML = '<div class="empty">Nema zapisi. Dodaj trosok ili skeniraj.</div>'; return; }
+  list.innerHTML = items.map(function (x) {
+    var c = catById(x.cat);
+    return '<div class="item" data-id="' + x.id + '"><div class="dot" style="background:' + c.color + '"></div><div class="meta"><b>' + (x.shop || c.name) + "</b><small>" + x.date + " " + (x.time || "") + " · " + c.name + '</small></div><div class="amt">' + fmtDen(x.amount) + " den</div></div>";
+  }).join("");
+  list.querySelectorAll(".item").forEach(function (el) { el.onclick = function () { openEdit(el.getAttribute("data-id")); }; });
+}
+function openManual(item) {
+  editId = item ? item.id : null;
+  $("manualTitle").textContent = item ? "Izmeni trosok" : "Nov trosok";
+  var p = item ? { date: item.date, time: item.time } : nowParts();
+  $("amount").value = item ? item.amount : "";
+  $("note").value = item ? (item.shop || "") : "";
+  $("pay").value = item ? (item.pay || "karticka") : "karticka";
+  $("date").value = p.date;
+  $("time").value = p.time || "12:00";
+  selectedCat = item ? item.cat : "hrana";
+  renderChips($("catChips"), selectedCat);
+  $("deleteManual").style.display = item ? "block" : "none";
+  $("manualSheet").classList.add("open");
+}
+function openEdit(id) { for (var i = 0; i < state.length; i++) if (state[i].id === id) { openManual(state[i]); return; } }
+function closeSheets() { $("manualSheet").classList.remove("open"); $("scanSheet").classList.remove("open"); }
+$("openManual").onclick = function () { openManual(null); };
+$("cancelManual").onclick = closeSheets;
+$("saveManual").onclick = function () {
+  var amount = Number(String($("amount").value).replace(",", "."));
+  if (!amount || amount <= 0) { alert("Vnesi suma."); return; }
+  var rec = { id: editId || (Date.now() + "-" + Math.random().toString(16).slice(2)), amount: amount, cat: selectedCat, date: $("date").value, time: $("time").value, shop: $("note").value.trim(), pay: $("pay").value, source: "manual" };
+  if (editId) state = state.map(function (x) { return x.id === editId ? Object.assign({}, x, rec) : x; });
+  else state.unshift(rec);
+  save(); closeSheets(); render();
+};
+$("deleteManual").onclick = function () {
+  if (!editId) return;
+  if (confirm("Da se izbrise ovoj trosok?")) { state = state.filter(function (x) { return x.id !== editId; }); save(); closeSheets(); render(); }
+};
+$("openScan").onclick = function () {
+  var p = nowParts();
+  $("scanDate").value = p.date; $("scanTime").value = p.time; $("scanAmount").value = ""; $("scanShop").value = ""; $("scanItems").value = "";
+  $("ocrStatus").textContent = "Otvori kamera ili galerija."; $("preview").style.display = "none"; receiptDataUrl = "";
+  $("scanCat").innerHTML = CATS.map(function (c) { return '<option value="' + c.id + '">' + c.name + "</option>"; }).join("");
+  $("prodList").innerHTML = ""; $("scanSheet").classList.add("open");
+};
+$("cancelScan").onclick = closeSheets;
+$("btnCam").onclick = function () { $("photoCam").click(); };
+$("btnGal").onclick = function () { $("photoGal").click(); };
+$("openSettings").onclick = function () {
+  var s = {}; try { s = JSON.parse(localStorage.getItem("fiskai.settings") || "{}"); } catch (e) {}
+  $("apiKey").value = s.apiKey || ""; $("aiModel").value = s.model || "grok-4"; $("settingsSheet").classList.add("open");
+};
+$("cancelSettings").onclick = function () { $("settingsSheet").classList.remove("open"); };
+$("saveSettings").onclick = function () {
+  localStorage.setItem("fiskai.settings", JSON.stringify({ apiKey: $("apiKey").value.trim(), model: $("aiModel").value }));
+  $("settingsSheet").classList.remove("open");
+};
+function compressImage(file) {
+  return new Promise(function (resolve) {
+    var img = new Image(); var url = URL.createObjectURL(file);
+    img.onload = function () {
+      var canvas = document.createElement("canvas"); var max = 1200; var width = img.width; var height = img.height;
+      if (width > max) { height = height * max / width; width = max; }
+      canvas.width = width; canvas.height = height; canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", 0.72)); URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  });
+}
+function onPhoto(e) {
+  var file = e.target.files && e.target.files[0];
+  if (!file) return;
+  compressImage(file).then(function (data) {
+    receiptDataUrl = data; $("preview").src = data; $("preview").style.display = "block";
+    $("ocrStatus").textContent = "Vnesi suma i prodavnica, pa zacuvaj.";
+  });
+}
+$("photoCam").onchange = onPhoto;
+$("photoGal").onchange = onPhoto;
+$("saveScan").onclick = function () {
+  var amount = Number(String($("scanAmount").value).replace(",", "."));
+  if (!amount || amount <= 0) { alert("Vnesi ja sumata."); return; }
+  state.unshift({ id: Date.now() + "-" + Math.random().toString(16).slice(2), amount: amount, cat: $("scanCat").value, date: $("scanDate").value, time: $("scanTime").value, shop: $("scanShop").value.trim(), products: $("scanItems").value.trim(), photo: receiptDataUrl, source: "scan", pay: "karticka" });
+  save(); closeSheets(); render();
+};
+$("prevMonth").onclick = function () { view.setMonth(view.getMonth() - 1); render(); };
+$("nextMonth").onclick = function () { view.setMonth(view.getMonth() + 1); render(); };
+$("exportBtn").onclick = function () {
+  var rows = [["datum", "vreme", "suma", "grupa", "prodavnica", "plakanje", "izvor"]];
+  filtered().forEach(function (x) { rows.push([x.date, x.time, x.amount, x.cat, x.shop || "", x.pay || "", x.source || ""]); });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([rows.map(function (r) { return r.join(","); }).join("\n")], { type: "text/csv" }));
+  a.download = "trosoci-" + monthKey(view) + ".csv"; a.click();
+};
+$("clearMonthBtn").onclick = function () {
+  if (!confirm("Da se izbrisat site zapisi za ovoj mesec?")) return;
+  var key = monthKey(view); state = state.filter(function (x) { return !(x.date && x.date.indexOf(key) === 0); }); save(); render();
+};
+document.querySelectorAll(".sheet").forEach(function (s) { s.addEventListener("click", function (e) { if (e.target === s) closeSheets(); }); });
 render();
