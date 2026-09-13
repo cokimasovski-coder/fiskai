@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="FiskAI" />
   <title>FiskAI</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="style.css?v=8" />
@@ -39,4 +41,5 @@
   <div class="sheet" id="settingsSheet"><div class="panel"><div class="grab"></div><h2>Поставки</h2><label>Валута</label><select id="currency"><option value="MKD">Денари (ден)</option><option value="EUR">Евра (€)</option></select><label>Курс (денари за 1 евро)</label><input id="eurRate" inputmode="decimal" placeholder="61.5" /><p class="tiny">Приказот и новиот внес се во избраната валута.</p><label>xAI API клуч</label><input id="apiKey" type="password" placeholder="xai-..." /><label>Модел</label><select id="aiModel"><option value="grok-4">grok-4</option></select><div class="row-btns"><button class="btn btn-ghost" id="cancelSettings">Затвори</button><button class="btn btn-primary" id="saveSettings">Зачувај</button></div></div></div>
   <div class="sheet" id="budgetSheet"><div class="panel"><div class="grab"></div><h2>Месечен буџет</h2><p class="tiny">Стави лимит по група. 0 = без лимит.</p><div id="budgetFields"></div><div class="row-btns"><button class="btn btn-ghost" id="cancelBudget">Затвори</button><button class="btn btn-primary" id="saveBudget">Зачувај буџет</button></div></div></div>
   <script src="app.js?v=8"></script>
+  <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(function(){})}</script>
 </body></html>
