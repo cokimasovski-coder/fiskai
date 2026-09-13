@@ -1,12 +1,12 @@
 const CATS = [
-  { id: "hrana", name: "Hrana", color: "#22c55e" },
-  { id: "smetki", name: "Smetki", color: "#38bdf8" },
-  { id: "transport", name: "Transport", color: "#f59e0b" },
-  { id: "kafe", name: "Kafe / izlez", color: "#a78bfa" },
-  { id: "zdravje", name: "Zdravje", color: "#f43f5e" },
-  { id: "kirija", name: "Kirija", color: "#fb7185" },
-  { id: "obleka", name: "Obleka", color: "#2dd4bf" },
-  { id: "ostanato", name: "Ostanato", color: "#94a3b8" }
+  { id: "hrana", name: "\u0425\u0440\u0430\u043d\u0430", color: "#22c55e" },
+  { id: "smetki", name: "\u0421\u043c\u0435\u0442\u043a\u0438", color: "#38bdf8" },
+  { id: "transport", name: "\u0422\u0440\u0430\u043d\u0441\u043f\u043e\u0440\u0442", color: "#f59e0b" },
+  { id: "kafe", name: "\u041a\u0430\u0444\u0435 / \u0438\u0437\u043b\u0435\u0437", color: "#a78bfa" },
+  { id: "zdravje", name: "\u0417\u0434\u0440\u0430\u0432\u0458\u0435", color: "#f43f5e" },
+  { id: "kirija", name: "\u041a\u0438\u0440\u0438\u0458\u0430", color: "#fb7185" },
+  { id: "obleka", name: "\u041e\u0431\u043b\u0435\u043a\u0430", color: "#2dd4bf" },
+  { id: "ostanato", name: "\u041e\u0441\u0442\u0430\u043d\u0430\u0442\u043e", color: "#94a3b8" }
 ];
 const $ = function (id) { return document.getElementById(id); };
 let state = [];
@@ -50,21 +50,21 @@ function render() {
   var total = 0;
   var by = {};
   items.forEach(function (x) { total += Number(x.amount || 0); by[x.cat] = (by[x.cat] || 0) + Number(x.amount || 0); });
-  $("monthSum").innerHTML = fmtDen(total) + " <span>den</span>";
+  $("monthSum").innerHTML = fmtDen(total) + " <span>\u0434\u0435\u043d</span>";
   var top = Object.keys(by).map(function (k) { return [k, by[k]]; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 4);
-  if (!top.length) $("catSummary").innerHTML = '<div class="cat-mini"><span>Nema trosoci</span><b>0 den</b></div>';
-  else $("catSummary").innerHTML = top.map(function (row) { var c = catById(row[0]); return '<div class="cat-mini"><span>' + c.name + "</span><b>" + fmtDen(row[1]) + " den</b></div>"; }).join("");
+  if (!top.length) $("catSummary").innerHTML = '<div class="cat-mini"><span>\u041d\u0435\u043c\u0430 \u0442\u0440\u043e\u0448\u043e\u0446\u0438</span><b>0 \u0434\u0435\u043d</b></div>';
+  else $("catSummary").innerHTML = top.map(function (row) { var c = catById(row[0]); return '<div class="cat-mini"><span>' + c.name + "</span><b>" + fmtDen(row[1]) + " \u0434\u0435\u043d</b></div>"; }).join("");
   var list = $("list");
-  if (!items.length) { list.innerHTML = '<div class="empty">Nema zapisi. Dodaj trosok ili skeniraj.</div>'; return; }
+  if (!items.length) { list.innerHTML = '<div class="empty">\u041d\u0435\u043c\u0430 \u0437\u0430\u043f\u0438\u0441\u0438. \u0414\u043e\u0434\u0430\u0458 \u0442\u0440\u043e\u0448\u043e\u043a \u0438\u043b\u0438 \u0441\u043a\u0435\u043d\u0438\u0440\u0430\u0458.</div>'; return; }
   list.innerHTML = items.map(function (x) {
     var c = catById(x.cat);
-    return '<div class="item" data-id="' + x.id + '"><div class="dot" style="background:' + c.color + '"></div><div class="meta"><b>' + (x.shop || c.name) + "</b><small>" + x.date + " " + (x.time || "") + " · " + c.name + '</small></div><div class="amt">' + fmtDen(x.amount) + " den</div></div>";
+    return '<div class="item" data-id="' + x.id + '"><div class="dot" style="background:' + c.color + '"></div><div class="meta"><b>' + (x.shop || c.name) + "</b><small>" + x.date + " " + (x.time || "") + " \u00b7 " + c.name + '</small></div><div class="amt">' + fmtDen(x.amount) + " \u0434\u0435\u043d</div></div>";
   }).join("");
   list.querySelectorAll(".item").forEach(function (el) { el.onclick = function () { openEdit(el.getAttribute("data-id")); }; });
 }
 function openManual(item) {
   editId = item ? item.id : null;
-  $("manualTitle").textContent = item ? "Izmeni trosok" : "Nov trosok";
+  $("manualTitle").textContent = item ? "\u0418\u0437\u043c\u0435\u043d\u0438 \u0442\u0440\u043e\u0448\u043e\u043a" : "\u041d\u043e\u0432 \u0442\u0440\u043e\u0448\u043e\u043a";
   var p = item ? { date: item.date, time: item.time } : nowParts();
   $("amount").value = item ? item.amount : "";
   $("note").value = item ? (item.shop || "") : "";
@@ -82,7 +82,7 @@ $("openManual").onclick = function () { openManual(null); };
 $("cancelManual").onclick = closeSheets;
 $("saveManual").onclick = function () {
   var amount = Number(String($("amount").value).replace(",", "."));
-  if (!amount || amount <= 0) { alert("Vnesi suma."); return; }
+  if (!amount || amount <= 0) { alert("\u0412\u043d\u0435\u0441\u0438 \u0441\u0443\u043c\u0430."); return; }
   var rec = { id: editId || (Date.now() + "-" + Math.random().toString(16).slice(2)), amount: amount, cat: selectedCat, date: $("date").value, time: $("time").value, shop: $("note").value.trim(), pay: $("pay").value, source: "manual" };
   if (editId) state = state.map(function (x) { return x.id === editId ? Object.assign({}, x, rec) : x; });
   else state.unshift(rec);
@@ -90,12 +90,12 @@ $("saveManual").onclick = function () {
 };
 $("deleteManual").onclick = function () {
   if (!editId) return;
-  if (confirm("Da se izbrise ovoj trosok?")) { state = state.filter(function (x) { return x.id !== editId; }); save(); closeSheets(); render(); }
+  if (confirm("\u0414\u0430 \u0441\u0435 \u0438\u0437\u0431\u0440\u0438\u0448\u0435 \u043e\u0432\u043e\u0458 \u0442\u0440\u043e\u0448\u043e\u043a?")) { state = state.filter(function (x) { return x.id !== editId; }); save(); closeSheets(); render(); }
 };
 $("openScan").onclick = function () {
   var p = nowParts();
   $("scanDate").value = p.date; $("scanTime").value = p.time; $("scanAmount").value = ""; $("scanShop").value = ""; $("scanItems").value = "";
-  $("ocrStatus").textContent = "Otvori kamera ili galerija."; $("preview").style.display = "none"; receiptDataUrl = "";
+  $("ocrStatus").textContent = "\u041e\u0442\u0432\u043e\u0440\u0438 \u043a\u0430\u043c\u0435\u0440\u0430 \u0438\u043b\u0438 \u0433\u0430\u043b\u0435\u0440\u0438\u0458\u0430."; $("preview").style.display = "none"; receiptDataUrl = "";
   $("scanCat").innerHTML = CATS.map(function (c) { return '<option value="' + c.id + '">' + c.name + "</option>"; }).join("");
   $("prodList").innerHTML = ""; $("scanSheet").classList.add("open");
 };
@@ -128,14 +128,14 @@ function onPhoto(e) {
   if (!file) return;
   compressImage(file).then(function (data) {
     receiptDataUrl = data; $("preview").src = data; $("preview").style.display = "block";
-    $("ocrStatus").textContent = "Vnesi suma i prodavnica, pa zacuvaj.";
+    $("ocrStatus").textContent = "\u0412\u043d\u0435\u0441\u0438 \u0441\u0443\u043c\u0430 \u0438 \u043f\u0440\u043e\u0434\u0430\u0432\u043d\u0438\u0446\u0430, \u043f\u0430 \u0437\u0430\u0447\u0443\u0432\u0430\u0458.";
   });
 }
 $("photoCam").onchange = onPhoto;
 $("photoGal").onchange = onPhoto;
 $("saveScan").onclick = function () {
   var amount = Number(String($("scanAmount").value).replace(",", "."));
-  if (!amount || amount <= 0) { alert("Vnesi ja sumata."); return; }
+  if (!amount || amount <= 0) { alert("\u0412\u043d\u0435\u0441\u0438 \u0458\u0430 \u0441\u0443\u043c\u0430\u0442\u0430."); return; }
   state.unshift({ id: Date.now() + "-" + Math.random().toString(16).slice(2), amount: amount, cat: $("scanCat").value, date: $("scanDate").value, time: $("scanTime").value, shop: $("scanShop").value.trim(), products: $("scanItems").value.trim(), photo: receiptDataUrl, source: "scan", pay: "karticka" });
   save(); closeSheets(); render();
 };
@@ -149,7 +149,7 @@ $("exportBtn").onclick = function () {
   a.download = "trosoci-" + monthKey(view) + ".csv"; a.click();
 };
 $("clearMonthBtn").onclick = function () {
-  if (!confirm("Da se izbrisat site zapisi za ovoj mesec?")) return;
+  if (!confirm("\u0414\u0430 \u0441\u0435 \u0438\u0437\u0431\u0440\u0438\u0448\u0430\u0442 \u0441\u0438\u0442\u0435 \u0437\u0430\u043f\u0438\u0441\u0438 \u0437\u0430 \u043e\u0432\u043e\u0458 \u043c\u0435\u0441\u0435\u0446?")) return;
   var key = monthKey(view); state = state.filter(function (x) { return !(x.date && x.date.indexOf(key) === 0); }); save(); render();
 };
 document.querySelectorAll(".sheet").forEach(function (s) { s.addEventListener("click", function (e) { if (e.target === s) closeSheets(); }); });
