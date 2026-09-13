@@ -5,120 +5,112 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0f172a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="FiskAI" />
-  <title>FiskAI — Мои трошоци</title>
+  <title>FiskAI</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon.svg" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="top">
     <div>
       <div class="brand">FiskAI</div>
-      <h1 class="title">Мои трошоци</h1>
+      <h1 class="title">Moi trosoci</h1>
     </div>
     <div class="month-nav">
-      <button class="icon-btn" id="openSettings" title="AI поставки">⚙</button>
-      <button class="icon-btn" id="prevMonth">‹</button>
-      <button class="icon-btn" id="nextMonth">›</button>
+      <button class="icon-btn" id="openSettings">&#9881;</button>
+      <button class="icon-btn" id="prevMonth">&#8249;</button>
+      <button class="icon-btn" id="nextMonth">&#8250;</button>
     </div>
   </div>
   <section class="hero">
-    <div class="label" id="monthLabel">Септември 2026</div>
-    <div class="sum" id="monthSum">0 <span>ден</span></div>
+    <div class="label" id="monthLabel">-</div>
+    <div class="sum" id="monthSum">0 <span>den</span></div>
     <div class="cats" id="catSummary"></div>
     <div class="toolbar">
-      <button class="btn btn-ghost" id="exportBtn" style="padding:10px 12px;font-size:13px">Извези CSV</button>
-      <button class="btn btn-ghost" id="clearMonthBtn" style="padding:10px 12px;font-size:13px">Избриши месец</button>
+      <button class="btn btn-ghost" id="exportBtn" style="padding:10px 12px;font-size:13px">Izvezi CSV</button>
+      <button class="btn btn-ghost" id="clearMonthBtn" style="padding:10px 12px;font-size:13px">Izbrisi mesec</button>
     </div>
   </section>
   <div class="actions">
-    <button class="btn btn-primary" id="openManual">+ Трошок</button>
-    <button class="btn btn-scan" id="openScan">Скенирај сметка</button>
+    <button class="btn btn-primary" id="openManual">+ Trosok</button>
+    <button class="btn btn-scan" id="openScan">Skeniraj smetka</button>
   </div>
   <section class="section">
-    <h2>Последни записи</h2>
+    <h2>Posledni zapisi</h2>
     <div class="list" id="list"></div>
   </section>
   <div class="sheet" id="manualSheet">
     <div class="panel">
       <div class="grab"></div>
-      <h2 id="manualTitle">Нов трошок</h2>
-      <label>Сума (ден)</label>
-      <input id="amount" inputmode="decimal" placeholder="0.00" />
-      <label>Група</label>
+      <h2 id="manualTitle">Nov trosok</h2>
+      <label>Suma (den)</label>
+      <input id="amount" inputmode="decimal" placeholder="0" />
+      <label>Grupa</label>
       <div class="chips" id="catChips"></div>
       <div class="grid2">
-        <div><label>Датум</label><input type="date" id="date" /></div>
-        <div><label>Време</label><input type="time" id="time" /></div>
+        <div><label>Datum</label><input type="date" id="date" /></div>
+        <div><label>Vreme</label><input type="time" id="time" /></div>
       </div>
-      <label>Продавница / опис</label>
-      <input id="note" placeholder="пр. Тинекс, кафе, парно" />
-      <label>Плаќање</label>
+      <label>Prodavnica / opis</label>
+      <input id="note" placeholder="Tinex, kafe..." />
+      <label>Plakanje</label>
       <select id="pay">
-        <option value="karticka">Картичка</option>
-        <option value="gotovo">Готово</option>
-        <option value="ostanato">Останато</option>
+        <option value="karticka">Karticka</option>
+        <option value="gotovo">Gotovo</option>
       </select>
       <div class="row-btns">
-        <button class="btn btn-ghost" id="cancelManual">Откажи</button>
-        <button class="btn btn-primary" id="saveManual">Зачувај</button>
+        <button class="btn btn-ghost" id="cancelManual">Otkazi</button>
+        <button class="btn btn-primary" id="saveManual">Zacuvaj</button>
       </div>
-      <button class="btn danger" id="deleteManual" style="width:100%;margin-top:8px;display:none">Избриши</button>
+      <button class="btn danger" id="deleteManual" style="width:100%;margin-top:8px;display:none">Izbrisi</button>
     </div>
   </div>
   <div class="sheet" id="scanSheet">
     <div class="panel">
       <div class="grab"></div>
-      <h2>AI скен на фискална</h2>
-      <p class="tiny">Сликај ја сметката. Ако имаш Grok API клуч, AI ги чита ставките подобро.</p>
+      <h2>Skeniraj fiskalna</h2>
+      <p class="tiny">Slikaj ja smetkata, pa vnesi suma ako treba.</p>
       <input class="hidden-file" type="file" id="photoCam" accept="image/*" capture="environment" />
       <input class="hidden-file" type="file" id="photoGal" accept="image/*" />
       <div class="pickers">
-        <button type="button" class="pick cam" id="btnCam">Камера<small>сликај сега</small></button>
-        <button type="button" class="pick" id="btnGal">Галерија<small>избери постоечка</small></button>
+        <button type="button" class="pick cam" id="btnCam">Kamera<small>slikaj sega</small></button>
+        <button type="button" class="pick" id="btnGal">Galerija<small>izberi slika</small></button>
       </div>
       <img id="preview" class="preview" alt="" style="display:none;margin-top:10px" />
-      <div class="status" id="ocrStatus">Чека слика.</div>
-      <label>Продавница</label>
-      <input id="scanShop" placeholder="име на маркет" />
+      <div class="status" id="ocrStatus">Ceka slika.</div>
+      <label>Prodavnica</label>
+      <input id="scanShop" />
       <div class="grid2">
-        <div><label>Сума</label><input id="scanAmount" inputmode="decimal" /></div>
-        <div><label>Група</label><select id="scanCat"></select></div>
+        <div><label>Suma</label><input id="scanAmount" inputmode="decimal" /></div>
+        <div><label>Grupa</label><select id="scanCat"></select></div>
       </div>
       <div class="grid2">
-        <div><label>Датум</label><input type="date" id="scanDate" /></div>
-        <div><label>Време</label><input type="time" id="scanTime" /></div>
+        <div><label>Datum</label><input type="date" id="scanDate" /></div>
+        <div><label>Vreme</label><input type="time" id="scanTime" /></div>
       </div>
-      <label>Производи / текст</label>
-      <textarea id="scanItems" placeholder="ставки од сметката"></textarea>
+      <label>Tekst</label>
+      <textarea id="scanItems"></textarea>
       <div class="products" id="prodList"></div>
       <div class="row-btns">
-        <button class="btn btn-ghost" id="cancelScan">Откажи</button>
-        <button class="btn btn-scan" id="saveScan">Зачувај скен</button>
+        <button class="btn btn-ghost" id="cancelScan">Otkazi</button>
+        <button class="btn btn-scan" id="saveScan">Zacuvaj sken</button>
       </div>
     </div>
   </div>
   <div class="sheet" id="settingsSheet">
     <div class="panel">
       <div class="grab"></div>
-      <h2>AI поставки</h2>
-      <p class="tiny">Стави xAI / Grok API клуч. Се чува само на овој телефон.</p>
-      <label>xAI API клуч</label>
-      <input id="apiKey" type="password" placeholder="xai-..." autocomplete="off" />
-      <label>Модел</label>
-      <select id="aiModel">
-        <option value="grok-4">grok-4</option>
-        <option value="grok-2-vision-1212">grok-2-vision</option>
-      </select>
+      <h2>AI postavki</h2>
+      <label>xAI API kluc</label>
+      <input id="apiKey" type="password" placeholder="xai-..." />
+      <label>Model</label>
+      <select id="aiModel"><option value="grok-4">grok-4</option></select>
       <div class="row-btns">
-        <button class="btn btn-ghost" id="cancelSettings">Затвори</button>
-        <button class="btn btn-primary" id="saveSettings">Зачувај клуч</button>
+        <button class="btn btn-ghost" id="cancelSettings">Zatvori</button>
+        <button class="btn btn-primary" id="saveSettings">Zacuvaj</button>
       </div>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
