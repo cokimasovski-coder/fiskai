@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0f172a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="FiskAI" />
   <title>FiskAI</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="style.css?v=8" />
@@ -25,6 +24,7 @@
     <div class="sum" id="monthSum">0 <span>ден</span></div>
     <div class="cats" id="catSummary"></div>
     <div id="budgetHome" style="margin-top:10px"></div>
+    <p class="tiny" id="syncStatus" style="margin-top:8px">Податоците се чуваат на телефонот.</p>
     <div class="toolbar">
       <button class="btn btn-ghost" id="openBudget" style="padding:10px 12px;font-size:13px">Буџет</button>
       <button class="btn btn-ghost" id="exportBtn" style="padding:10px 12px;font-size:13px">Извези CSV</button>
@@ -38,8 +38,17 @@
   <section class="section"><h2>Последни записи</h2><div class="list" id="list"></div></section>
   <div class="sheet" id="manualSheet"><div class="panel"><div class="grab"></div><h2 id="manualTitle">Нов трошок</h2><label>Сума</label><input id="amount" inputmode="decimal" placeholder="0" /><label>Група</label><div class="chips" id="catChips"></div><div class="grid2"><div><label>Датум</label><input type="date" id="date" /></div><div><label>Време</label><input type="time" id="time" /></div></div><label>Продавница / опис</label><input id="note" /><label>Плаќање</label><select id="pay"><option value="karticka">Картичка</option><option value="gotovo">Готово</option></select><div class="row-btns"><button class="btn btn-ghost" id="cancelManual">Откажи</button><button class="btn btn-primary" id="saveManual">Зачувај</button></div><button class="btn danger" id="deleteManual" style="width:100%;margin-top:8px;display:none">Избриши</button></div></div>
   <div class="sheet" id="scanSheet"><div class="panel"><div class="grab"></div><h2>Скенирај фискална</h2><p class="tiny">Сликај ја сметката, па провери ја сумата.</p><input class="hidden-file" type="file" id="photoCam" accept="image/*" capture="environment" /><input class="hidden-file" type="file" id="photoGal" accept="image/*" /><div class="pickers"><button type="button" class="pick cam" id="btnCam">Камера<small>сликај сега</small></button><button type="button" class="pick" id="btnGal">Галерија<small>избери слика</small></button></div><img id="preview" class="preview" alt="" style="display:none;margin-top:10px" /><div class="status" id="ocrStatus">Чека слика.</div><label>Продавница</label><input id="scanShop" /><div class="grid2"><div><label>Сума</label><input id="scanAmount" inputmode="decimal" /></div><div><label>Група</label><select id="scanCat"></select></div></div><div class="grid2"><div><label>Датум</label><input type="date" id="scanDate" /></div><div><label>Време</label><input type="time" id="scanTime" /></div></div><label>Текст</label><textarea id="scanItems"></textarea><div class="products" id="prodList"></div><div class="row-btns"><button class="btn btn-ghost" id="cancelScan">Откажи</button><button class="btn btn-scan" id="saveScan">Зачувај скен</button></div></div></div>
-  <div class="sheet" id="settingsSheet"><div class="panel"><div class="grab"></div><h2>Поставки</h2><label>Валута</label><select id="currency"><option value="MKD">Денари (ден)</option><option value="EUR">Евра (€)</option></select><label>Курс (денари за 1 евро)</label><input id="eurRate" inputmode="decimal" placeholder="61.5" /><p class="tiny">Приказот и новиот внес се во избраната валута.</p><label>xAI API клуч</label><input id="apiKey" type="password" placeholder="xai-..." /><label>Модел</label><select id="aiModel"><option value="grok-4">grok-4</option></select><div class="row-btns"><button class="btn btn-ghost" id="cancelSettings">Затвори</button><button class="btn btn-primary" id="saveSettings">Зачувај</button></div></div></div>
+  <div class="sheet" id="settingsSheet"><div class="panel"><div class="grab"></div><h2>Поставки</h2><label>Валута</label><select id="currency"><option value="MKD">Денари (ден)</option><option value="EUR">Евра (€)</option></select><label>Курс (денари за 1 евро)</label><input id="eurRate" inputmode="decimal" placeholder="61.5" /><label>GitHub token за backup</label><input id="ghToken" type="password" placeholder="ghp_..." /><p class="tiny">Токенот се чува само на телефонот. Со него трошоците се качуваат во твојот repo кога има интернет.</p><label>xAI API клуч</label><input id="apiKey" type="password" placeholder="xai-..." /><label>Модел</label><select id="aiModel"><option value="grok-4">grok-4</option></select><div class="row-btns"><button class="btn btn-ghost" id="cancelSettings">Затвори</button><button class="btn btn-primary" id="saveSettings">Зачувај</button></div></div></div>
   <div class="sheet" id="budgetSheet"><div class="panel"><div class="grab"></div><h2>Месечен буџет</h2><p class="tiny">Стави лимит по група. 0 = без лимит.</p><div id="budgetFields"></div><div class="row-btns"><button class="btn btn-ghost" id="cancelBudget">Затвори</button><button class="btn btn-primary" id="saveBudget">Зачувај буџет</button></div></div></div>
   <script src="app.js?v=8"></script>
-  <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(function(){})}</script>
+  <script src="sync.js"></script>
+  <script>
+    (function(){
+      var oldOpen=document.getElementById("openSettings");
+      var oldSave=document.getElementById("saveSettings");
+      if(oldOpen){var prev=oldOpen.onclick;oldOpen.onclick=function(){if(prev)prev();var s={};try{s=JSON.parse(localStorage.getItem("fiskai.settings")||"{}")}catch(e){} var el=document.getElementById("ghToken"); if(el) el.value=s.ghToken||"";};}
+      if(oldSave){var prevS=oldSave.onclick;oldSave.onclick=function(){var s={};try{s=JSON.parse(localStorage.getItem("fiskai.settings")||"{}")}catch(e){} var el=document.getElementById("ghToken"); if(el) s.ghToken=el.value.trim(); localStorage.setItem("fiskai.settings",JSON.stringify(s)); if(prevS)prevS(); if(window.syncNow)syncNow();};}
+    })();
+    if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(function(){})}
+  </script>
 </body></html>
