@@ -10,9 +10,115 @@
   <title>FiskAI — Мои трошоци</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<p>Loading app files... If you see this, refresh after next update.</p>
-<script>location.replace('./app.html')</script>
+  <div class="top">
+    <div>
+      <div class="brand">FiskAI</div>
+      <h1 class="title">Мои трошоци</h1>
+    </div>
+    <div class="month-nav">
+      <button class="icon-btn" id="openSettings" title="AI поставки">⚙</button>
+      <button class="icon-btn" id="prevMonth">‹</button>
+      <button class="icon-btn" id="nextMonth">›</button>
+    </div>
+  </div>
+  <section class="hero">
+    <div class="label" id="monthLabel">Септември 2026</div>
+    <div class="sum" id="monthSum">0 <span>ден</span></div>
+    <div class="cats" id="catSummary"></div>
+    <div class="toolbar">
+      <button class="btn btn-ghost" id="exportBtn" style="padding:10px 12px;font-size:13px">Извези CSV</button>
+      <button class="btn btn-ghost" id="clearMonthBtn" style="padding:10px 12px;font-size:13px">Избриши месец</button>
+    </div>
+  </section>
+  <div class="actions">
+    <button class="btn btn-primary" id="openManual">+ Трошок</button>
+    <button class="btn btn-scan" id="openScan">Скенирај сметка</button>
+  </div>
+  <section class="section">
+    <h2>Последни записи</h2>
+    <div class="list" id="list"></div>
+  </section>
+  <div class="sheet" id="manualSheet">
+    <div class="panel">
+      <div class="grab"></div>
+      <h2 id="manualTitle">Нов трошок</h2>
+      <label>Сума (ден)</label>
+      <input id="amount" inputmode="decimal" placeholder="0.00" />
+      <label>Група</label>
+      <div class="chips" id="catChips"></div>
+      <div class="grid2">
+        <div><label>Датум</label><input type="date" id="date" /></div>
+        <div><label>Време</label><input type="time" id="time" /></div>
+      </div>
+      <label>Продавница / опис</label>
+      <input id="note" placeholder="пр. Тинекс, кафе, парно" />
+      <label>Плаќање</label>
+      <select id="pay">
+        <option value="karticka">Картичка</option>
+        <option value="gotovo">Готово</option>
+        <option value="ostanato">Останато</option>
+      </select>
+      <div class="row-btns">
+        <button class="btn btn-ghost" id="cancelManual">Откажи</button>
+        <button class="btn btn-primary" id="saveManual">Зачувај</button>
+      </div>
+      <button class="btn danger" id="deleteManual" style="width:100%;margin-top:8px;display:none">Избриши</button>
+    </div>
+  </div>
+  <div class="sheet" id="scanSheet">
+    <div class="panel">
+      <div class="grab"></div>
+      <h2>AI скен на фискална</h2>
+      <p class="tiny">Сликај ја сметката. Ако имаш Grok API клуч, AI ги чита ставките подобро.</p>
+      <input class="hidden-file" type="file" id="photoCam" accept="image/*" capture="environment" />
+      <input class="hidden-file" type="file" id="photoGal" accept="image/*" />
+      <div class="pickers">
+        <button type="button" class="pick cam" id="btnCam">Камера<small>сликај сега</small></button>
+        <button type="button" class="pick" id="btnGal">Галерија<small>избери постоечка</small></button>
+      </div>
+      <img id="preview" class="preview" alt="" style="display:none;margin-top:10px" />
+      <div class="status" id="ocrStatus">Чека слика.</div>
+      <label>Продавница</label>
+      <input id="scanShop" placeholder="име на маркет" />
+      <div class="grid2">
+        <div><label>Сума</label><input id="scanAmount" inputmode="decimal" /></div>
+        <div><label>Група</label><select id="scanCat"></select></div>
+      </div>
+      <div class="grid2">
+        <div><label>Датум</label><input type="date" id="scanDate" /></div>
+        <div><label>Време</label><input type="time" id="scanTime" /></div>
+      </div>
+      <label>Производи / текст</label>
+      <textarea id="scanItems" placeholder="ставки од сметката"></textarea>
+      <div class="products" id="prodList"></div>
+      <div class="row-btns">
+        <button class="btn btn-ghost" id="cancelScan">Откажи</button>
+        <button class="btn btn-scan" id="saveScan">Зачувај скен</button>
+      </div>
+    </div>
+  </div>
+  <div class="sheet" id="settingsSheet">
+    <div class="panel">
+      <div class="grab"></div>
+      <h2>AI поставки</h2>
+      <p class="tiny">Стави xAI / Grok API клуч. Се чува само на овој телефон.</p>
+      <label>xAI API клуч</label>
+      <input id="apiKey" type="password" placeholder="xai-..." autocomplete="off" />
+      <label>Модел</label>
+      <select id="aiModel">
+        <option value="grok-4">grok-4</option>
+        <option value="grok-2-vision-1212">grok-2-vision</option>
+      </select>
+      <div class="row-btns">
+        <button class="btn btn-ghost" id="cancelSettings">Затвори</button>
+        <button class="btn btn-primary" id="saveSettings">Зачувај клуч</button>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
